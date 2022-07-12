@@ -121,9 +121,9 @@ def check_response(response):
 
     if homeworks == []:
         logger.debug('В ответе нет новых статусов')
-    elif homeworks:
-        logger.info('Ответ от практикума проверен - ОК')
+        raise exceptions.NothingNewException
 
+    logger.info('Ответ от практикума проверен - ОК')
     return homeworks
 
 
@@ -185,11 +185,6 @@ def main():
 
             homeworks = check_response(response)
             logger.debug(f'homeworks: {homeworks}')
-
-            if homeworks == []:
-                logger.info('Нет новых статусов. Ждём следующего цикла')
-                time.sleep(RETRY_TIME)
-                continue
 
             for work in homeworks:
                 message = parse_status(work)
