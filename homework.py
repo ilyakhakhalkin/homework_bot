@@ -5,7 +5,6 @@ import logging
 import time
 import sys
 import os
-import exceptions
 from dotenv import load_dotenv
 
 
@@ -27,35 +26,6 @@ HOMEWORK_STATUSES = {
 }
 
 
-# class telegramHandler(logging.StreamHandler):
-#     """Хендлер для отправки логов в телеграм."""
-
-#     def __init__(self, token, chat_id):
-#         """Инициализация хендлера.
-#         self.token = токен бота Telegram
-#         self.chat_id = идентификатор чата пользователя
-#         """
-#         super().__init__()
-#         self.token = token
-#         self.chat_id = chat_id
-#         self.bot = telegram.Bot(token=self.token)
-#         self.messages_seen = []
-
-#     def emit(self, record):
-#         """Отправка логов."""
-#         message = record.getMessage()
-#         is_new_message = message not in self.messages_seen
-
-#         if is_new_message:
-#             self.messages_seen.append(message)
-#             msg = self.format(record)
-#             self.bot.send_message(self.chat_id, msg, parse_mode="HTML")
-
-#     def clear_messages_history(self):
-#         """Удаление сохраненных логов."""
-#         self.messages_seen = []
-
-
 def init_logger(name):
     """Инициализация логгера и хендлеров."""
     logger = logging.getLogger(name)
@@ -66,11 +36,6 @@ def init_logger(name):
     stream_handler.setLevel(logging.DEBUG)
     stream_handler.setFormatter(logging.Formatter(FORMAT))
     logger.addHandler(stream_handler)
-
-    # tg_handler = telegramHandler(TELEGRAM_TOKEN, TELEGRAM_CHAT_ID)
-    # tg_handler.setLevel(logging.ERROR)
-    # tg_handler.setFormatter(logging.Formatter(FORMAT))
-    # logger.addHandler(tg_handler)
 
     logger.debug('Логгер инициализирован')
 
@@ -84,9 +49,8 @@ def send_message(bot, message):
 
     if response['text'] == message:
         logger.info('Сообщение в Telegram успешно отправлено')
-        logger.handlers[1].clear_messages_history()
     else:
-        logger.error('Сбой при отправке сообщения в Telegram')
+        raise RuntimeError('Сбой при отправке сообщения в Telegram')
 
 
 def get_api_answer(current_timestamp):
@@ -97,13 +61,13 @@ def get_api_answer(current_timestamp):
     response = requests.get(url=ENDPOINT, headers=HEADERS, params=params)
 
     if response.status_code != HTTPStatus.OK:
-        logger.error(f'Ошибка {response.status_code} при запросе к endpoint')
-        raise RuntimeError
-
+        raise RuntimeError(
+            f'Ошибка {response.status_code} при запросе к endpoint'
+        )
     try:
         response_json = response.json()
     except ValueError:
-        logger.error('Не удалось преобразовать данные')
+        raise ValueError('Не удалось преобразовать данные')
 
     logger.info('Ответ от практикума получен')
     return response_json
@@ -112,16 +76,13 @@ def get_api_answer(current_timestamp):
 def check_response(response):
     """Проверяет ответ API практикума."""
     if type(response) is not dict:
-        logger.error('Неверный тип ответа')
-        raise TypeError
+        raise TypeError('Неверный тип ответа')
 
     if 'homeworks' not in response.keys():
-        logger.error('Отсутствие ожидаемых ключей')
-        raise KeyError
+        raise KeyError('Отсутствие ожидаемых ключей')
 
     if type(response['homeworks']) is not list:
-        logger.error('Неверный тип данных')
-        raise TypeError
+        raise TypeError('Неверный тип данных')
 
     homeworks = response.get('homeworks')
 
@@ -145,8 +106,7 @@ def parse_status(homework):
 
         return f'Изменился статус проверки работы "{homework_name}". {verdict}'
     else:
-        logger.error('Обнаружен недокументированный статус домашней работы')
-        raise exceptions.UndefinedHomeworkStatusError
+        raise KeyError('Обнаружен недокументированный статус домашней работы')
 
 
 def check_tokens():
@@ -187,7 +147,8 @@ def main():
             current_timestamp = response.get('current_date')
 
         except Exception as error:
-            logger.exception(error)
+            logger.error(error)
+            send_message(bot, str(error))
 
         time.sleep(RETRY_TIME)
 
