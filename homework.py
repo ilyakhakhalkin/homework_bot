@@ -1,4 +1,3 @@
-from typing import Type
 import telegram
 import requests
 from http import HTTPStatus
