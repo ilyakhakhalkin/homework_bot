@@ -31,7 +31,7 @@ class telegramHandler(logging.StreamHandler):
     """Хендлер для отправки логов в телеграм."""
 
     def __init__(self, token, chat_id):
-        """
+        """Инициализация хендлера.
         self.token = токен бота Telegram
         self.chat_id = идентификатор чата пользователя
         """
@@ -53,7 +53,6 @@ class telegramHandler(logging.StreamHandler):
 
     def clear_messages_history(self):
         """Удаление сохраненных логов."""
-
         self.messages_seen = []
         print('cleaned')
 
