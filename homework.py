@@ -31,16 +31,18 @@ class telegramHandler(logging.StreamHandler):
     """Хендлер для отправки логов в телеграм."""
 
     def __init__(self, token, chat_id):
+        """
+        self.token = токен бота Telegram
+        self.chat_id = идентификатор чата пользователя
+        """
         super().__init__()
         self.token = token
         self.chat_id = chat_id
         self.bot = telegram.Bot(token=self.token)
-
         self.messages_seen = []
 
     def emit(self, record):
-        """Отправка логов"""
-
+        """Отправка логов."""
         message = record.getMessage()
         is_new_message = message not in self.messages_seen
 
@@ -50,11 +52,14 @@ class telegramHandler(logging.StreamHandler):
             self.bot.send_message(self.chat_id, msg, parse_mode="HTML")
 
     def clear_messages_history(self):
+        """Удаление сохраненных логов."""
+
         self.messages_seen = []
         print('cleaned')
 
 
 def init_logger(name):
+    """Инициализация логгера и хендлеров."""
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
     FORMAT = '%(asctime)s - %(levelname)s - %(name)s - %(message)s'
@@ -73,8 +78,7 @@ def init_logger(name):
 
 
 def send_message(bot, message):
-    """Отправляет сообщение в Telegram"""
-
+    """Отправляет сообщение в Telegram."""
     response = bot.send_message(
         chat_id=TELEGRAM_CHAT_ID,
         text=message,
@@ -88,8 +92,7 @@ def send_message(bot, message):
 
 
 def get_api_answer(current_timestamp):
-    """Делает запрос к эндпоинту API практикума"""
-
+    """Делает запрос к эндпоинту API практикума."""
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
     logger.debug(f'params: {params}')
@@ -106,8 +109,7 @@ def get_api_answer(current_timestamp):
 
 
 def check_response(response):
-    """Проверяет ответ API практикума"""
-
+    """Проверяет ответ API практикума."""
     if not isinstance(response['homeworks'], list):
         logger.error('Отсутствие ожидаемых ключей')
         raise exceptions.HomeworksIsNotAListError
@@ -124,8 +126,7 @@ def check_response(response):
 
 
 def parse_status(homework):
-    """Извлекает информацию о конкретной домашней работе"""
-
+    """Извлекает информацию о конкретной домашней работе."""
     homework_name = homework['homework_name']
     logger.debug(f'homework_name: {homework_name}')
 
@@ -144,7 +145,6 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверка наличия токенов."""
-
     if not PRACTICUM_TOKEN:
         logger.critical('Отсутствует токен практикума')
         return False
@@ -166,7 +166,6 @@ logger = logging.getLogger(__name__)
 
 def main():
     """Основная логика работы бота."""
-
     if not check_tokens():
         logger.critical('Ошибка авторизации')
         return
@@ -206,4 +205,5 @@ def main():
 
 
 if __name__ == '__main__':
+    """main."""
     main()
