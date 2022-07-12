@@ -1,3 +1,4 @@
+from re import I
 import telegram
 import requests
 from http import HTTPStatus
@@ -108,6 +109,12 @@ def get_api_answer(current_timestamp):
 
 def check_response(response):
     """Проверяет ответ API практикума."""
+    if type(response) is not dict:
+        raise TypeError
+
+    if 'homeworks' not in response.keys():
+        raise KeyError
+
     if not isinstance(response['homeworks'], list):
         logger.error('Отсутствие ожидаемых ключей')
         raise exceptions.HomeworksIsNotAListError
