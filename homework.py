@@ -27,33 +27,33 @@ HOMEWORK_STATUSES = {
 }
 
 
-class telegramHandler(logging.StreamHandler):
-    """Хендлер для отправки логов в телеграм."""
+# class telegramHandler(logging.StreamHandler):
+#     """Хендлер для отправки логов в телеграм."""
 
-    def __init__(self, token, chat_id):
-        """Инициализация хендлера.
-        self.token = токен бота Telegram
-        self.chat_id = идентификатор чата пользователя
-        """
-        super().__init__()
-        self.token = token
-        self.chat_id = chat_id
-        self.bot = telegram.Bot(token=self.token)
-        self.messages_seen = []
+#     def __init__(self, token, chat_id):
+#         """Инициализация хендлера.
+#         self.token = токен бота Telegram
+#         self.chat_id = идентификатор чата пользователя
+#         """
+#         super().__init__()
+#         self.token = token
+#         self.chat_id = chat_id
+#         self.bot = telegram.Bot(token=self.token)
+#         self.messages_seen = []
 
-    def emit(self, record):
-        """Отправка логов."""
-        message = record.getMessage()
-        is_new_message = message not in self.messages_seen
+#     def emit(self, record):
+#         """Отправка логов."""
+#         message = record.getMessage()
+#         is_new_message = message not in self.messages_seen
 
-        if is_new_message:
-            self.messages_seen.append(message)
-            msg = self.format(record)
-            self.bot.send_message(self.chat_id, msg, parse_mode="HTML")
+#         if is_new_message:
+#             self.messages_seen.append(message)
+#             msg = self.format(record)
+#             self.bot.send_message(self.chat_id, msg, parse_mode="HTML")
 
-    def clear_messages_history(self):
-        """Удаление сохраненных логов."""
-        self.messages_seen = []
+#     def clear_messages_history(self):
+#         """Удаление сохраненных логов."""
+#         self.messages_seen = []
 
 
 def init_logger(name):
@@ -67,10 +67,10 @@ def init_logger(name):
     stream_handler.setFormatter(logging.Formatter(FORMAT))
     logger.addHandler(stream_handler)
 
-    tg_handler = telegramHandler(TELEGRAM_TOKEN, TELEGRAM_CHAT_ID)
-    tg_handler.setLevel(logging.ERROR)
-    tg_handler.setFormatter(logging.Formatter(FORMAT))
-    logger.addHandler(tg_handler)
+    # tg_handler = telegramHandler(TELEGRAM_TOKEN, TELEGRAM_CHAT_ID)
+    # tg_handler.setLevel(logging.ERROR)
+    # tg_handler.setFormatter(logging.Formatter(FORMAT))
+    # logger.addHandler(tg_handler)
 
     logger.debug('Логгер инициализирован')
 
@@ -84,7 +84,7 @@ def send_message(bot, message):
 
     if response['text'] == message:
         logger.info('Сообщение в Telegram успешно отправлено')
-        # logger.handlers[1].clear_messages_history()
+        logger.handlers[1].clear_messages_history()
     else:
         logger.error('Сбой при отправке сообщения в Telegram')
 
