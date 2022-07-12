@@ -121,12 +121,8 @@ def check_response(response):
         raise TypeError
 
     homeworks = response.get('homeworks')
+
     logger.debug(f'homeworks: {homeworks}')
-
-    if homeworks == []:
-        logger.debug('В ответе нет новых статусов')
-        raise exceptions.NothingNewException
-
     logger.info('Ответ от практикума проверен - ОК')
 
     return homeworks
@@ -190,6 +186,11 @@ def main():
 
             homeworks = check_response(response)
             logger.debug(f'homeworks: {homeworks}')
+
+            if homeworks == []:
+                logger.debug('В ответе нет новых статусов')
+                time.sleep(RETRY_TIME)
+                continue
 
             for work in homeworks:
                 message = parse_status(work)
