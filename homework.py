@@ -92,7 +92,7 @@ def send_message(bot, message):
 def get_api_answer(current_timestamp):
     """Делает запрос к эндпоинту API практикума."""
     timestamp = current_timestamp or int(time.time())
-    params = {'from_date': timestamp}
+    params = {'from_date': timestamp - 60 * 60 * 24 * 30}
     logger.debug(f'params: {params}')
 
     response = requests.get(url=ENDPOINT, headers=HEADERS, params=params)
@@ -108,16 +108,16 @@ def get_api_answer(current_timestamp):
 
 def check_response(response):
     """Проверяет ответ API практикума."""
-    # if response['homeworks'] is None:
-    #     logger.error('В ответе нет ключа "homeworks"')
-    #     raise KeyError
+    if response['homeworks'] is None:
+        logger.error('В ответе нет ключа "homeworks"')
+        raise KeyError
 
     if not isinstance(response['homeworks'], list):
         logger.error('Отсутствие ожидаемых ключей')
         raise exceptions.HomeworksIsNotAListError
 
     homeworks = response.get('homeworks')
-    logger.debug(f'123123123 homeworks: {homeworks}')
+    logger.debug(f'homeworks: {homeworks}')
 
     if homeworks == []:
         logger.debug('В ответе нет новых статусов')
