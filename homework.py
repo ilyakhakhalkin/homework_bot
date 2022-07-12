@@ -108,10 +108,6 @@ def get_api_answer(current_timestamp):
 
 def check_response(response):
     """Проверяет ответ API практикума."""
-    if response['homeworks'] is None:
-        logger.error('В ответе нет ключа "homeworks"')
-        raise KeyError
-
     if not isinstance(response['homeworks'], list):
         logger.error('Отсутствие ожидаемых ключей')
         raise exceptions.HomeworksIsNotAListError
@@ -121,14 +117,9 @@ def check_response(response):
 
     if homeworks == []:
         logger.debug('В ответе нет новых статусов')
-        # raise exceptions.NothingNewException
-        temp_str = {
-            'status': 'approved',
-            'homework_name': 'ilyakhakhalkin__hw05_final.zip'
-        }
-        homeworks = [temp_str]
-    else:
-        logger.info('Ответ от практикума проверен - ОК')
+        raise exceptions.NothingNewException
+
+    logger.info('Ответ от практикума проверен - ОК')
 
     return homeworks
 
