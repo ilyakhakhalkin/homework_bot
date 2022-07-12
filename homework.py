@@ -1,3 +1,4 @@
+from typing import Type
 import telegram
 import requests
 from http import HTTPStatus
@@ -109,14 +110,16 @@ def get_api_answer(current_timestamp):
 def check_response(response):
     """Проверяет ответ API практикума."""
     if type(response) is not dict:
+        logger.error('Неверный тип ответа')
         raise TypeError
 
     if 'homeworks' not in response.keys():
+        logger.error('Отсутствие ожидаемых ключей')
         raise KeyError
 
     if not isinstance(response['homeworks'], list):
-        logger.error('Отсутствие ожидаемых ключей')
-        raise exceptions.HomeworksIsNotAListError
+        logger.error('Неверный тип данных')
+        raise TypeError
 
     homeworks = response.get('homeworks')
     logger.debug(f'homeworks: {homeworks}')
