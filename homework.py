@@ -84,35 +84,28 @@ def send_message(bot, message):
 
     if response['text'] == message:
         logger.info('Сообщение в Telegram успешно отправлено')
-        logger.handlers[1].clear_messages_history()
+        # logger.handlers[1].clear_messages_history()
     else:
         logger.error('Сбой при отправке сообщения в Telegram')
 
 
 def get_api_answer(current_timestamp):
-    """Делает запрос к эндпоинту API практикума."""
+    """Запрос к API практикума."""
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
-    logger.debug(f'params: {params}')
 
     response = requests.get(url=ENDPOINT, headers=HEADERS, params=params)
-    logger.debug(f'response: {response}')
-
-    # if response.status_code == HTTPStatus.OK:
-    #     logger.info('Ответ от практикума получен')
-    #     return response.json()
-    # else:
-    #     logger.error(f'Ошибка {response.status_code} при запросе к endpoint')
-    #     raise exceptions.ResponseCodeError
 
     if response.status_code != HTTPStatus.OK:
+        logger.error(f'Ошибка {response.status_code} при запросе к endpoint')
         raise RuntimeError
 
-    response_json = response.json()
-    for error in ('code', 'error'):
-        if error in response_json:
-            raise RuntimeError
+    try:
+        response_json = response.json()
+    except ValueError:
+        logger.error('Не удалось преобразовать данные')
 
+    logger.info('Ответ от практикума получен')
     return response_json
 
 
@@ -173,10 +166,6 @@ def check_tokens():
     return True
 
 
-init_logger(__name__)
-logger = logging.getLogger(__name__)
-
-
 def main():
     """Основная логика работы бота."""
     if not check_tokens():
@@ -184,35 +173,27 @@ def main():
         return
 
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    logger.debug(f'bot: {bot}')
-
     current_timestamp = int(time.time())
-    logger.debug(f'current_timestamp: {current_timestamp}')
 
     while True:
         try:
             response = get_api_answer(current_timestamp)
             homeworks = check_response(response)
 
-            # if homeworks == []:
-            #     logger.debug('В ответе нет новых статусов')
-            #     time.sleep(RETRY_TIME)
-            #     continue
-
-            if homeworks:
-                message = parse_status(homeworks[0])
+            for work in homeworks:
+                message = parse_status(work)
                 send_message(bot, message)
 
-            # for work in homeworks:
-            #     message = parse_status(work)
-            #     send_message(bot, message)
-
             current_timestamp = response.get('current_date')
+
         except Exception as error:
             logger.exception(error)
 
         time.sleep(RETRY_TIME)
 
+
+init_logger(__name__)
+logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
     """main."""
