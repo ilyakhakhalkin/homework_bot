@@ -98,12 +98,22 @@ def get_api_answer(current_timestamp):
     response = requests.get(url=ENDPOINT, headers=HEADERS, params=params)
     logger.debug(f'response: {response}')
 
-    if response.status_code == HTTPStatus.OK:
-        logger.info('Ответ от практикума получен')
-        return response.json()
-    else:
-        logger.error(f'Ошибка {response.status_code} при запросе к endpoint')
-        raise exceptions.ResponseCodeError
+    # if response.status_code == HTTPStatus.OK:
+    #     logger.info('Ответ от практикума получен')
+    #     return response.json()
+    # else:
+    #     logger.error(f'Ошибка {response.status_code} при запросе к endpoint')
+    #     raise exceptions.ResponseCodeError
+
+    if response.status_code != HTTPStatus.OK:
+        raise RuntimeError
+
+    response_json = response.json()
+    for error in ('code', 'error'):
+        if error in response_json:
+            raise RuntimeError
+
+    return response_json
 
 
 def check_response(response):
@@ -200,8 +210,6 @@ def main():
             current_timestamp = response.get('current_date')
         except Exception as error:
             logger.exception(error)
-        else:
-            logger.error('Непредвиденная ошибка')
 
         time.sleep(RETRY_TIME)
 
