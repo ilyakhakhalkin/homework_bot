@@ -26,9 +26,3 @@ class HomeworksIsNotAListError(Exception):
     """Домашки пришли не в виде списка."""
 
     pass
-
-
-class WrongTypeError(Exception):
-    """Некорректный тип ответа."""
-
-    pass
