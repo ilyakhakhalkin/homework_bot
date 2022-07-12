@@ -1,4 +1,3 @@
-from re import I
 import telegram
 import requests
 from http import HTTPStatus
