@@ -116,7 +116,7 @@ def check_response(response):
         logger.error('Отсутствие ожидаемых ключей')
         raise KeyError
 
-    if not isinstance(response['homeworks'], list):
+    if type(response['homeworks']) is not list:
         logger.error('Неверный тип данных')
         raise TypeError
 
@@ -182,29 +182,28 @@ def main():
     while True:
         try:
             response = get_api_answer(current_timestamp)
-            logger.debug(f'response: {response}')
-
             homeworks = check_response(response)
-            logger.debug(f'homeworks: {homeworks}')
 
-            if homeworks == []:
-                logger.debug('В ответе нет новых статусов')
-                time.sleep(RETRY_TIME)
-                continue
+            # if homeworks == []:
+            #     logger.debug('В ответе нет новых статусов')
+            #     time.sleep(RETRY_TIME)
+            #     continue
 
-            for work in homeworks:
-                message = parse_status(work)
-                logger.debug(f'message: {message}')
+            if homeworks:
+                message = parse_status(homeworks[0])
                 send_message(bot, message)
 
-            current_timestamp = response.get('current_date')
-            time.sleep(RETRY_TIME)
+            # for work in homeworks:
+            #     message = parse_status(work)
+            #     send_message(bot, message)
 
+            current_timestamp = response.get('current_date')
         except Exception as error:
             logger.exception(error)
-            time.sleep(RETRY_TIME)
         else:
             logger.error('Непредвиденная ошибка')
+
+        time.sleep(RETRY_TIME)
 
 
 if __name__ == '__main__':
