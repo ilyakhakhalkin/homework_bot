@@ -5,6 +5,7 @@ import logging
 import time
 import sys
 import os
+import exceptions
 from dotenv import load_dotenv
 
 
@@ -71,10 +72,6 @@ def init_logger(name):
     logger.debug('Логгер инициализирован')
 
 
-init_logger(__name__)
-logger = logging.getLogger(__name__)
-
-
 def send_message(bot, message):
     """Отправляет сообщение в Telegram"""
 
@@ -105,14 +102,15 @@ def get_api_answer(current_timestamp):
         return response.json()
     else:
         logger.error(f'Ошибка {response.status_code} при запросе к endpoint')
+        raise exceptions.ResponseCodeError
 
 
 def check_response(response):
     """Проверяет ответ API практикума"""
 
-    if 'homeworks' not in response:
-        logger.error('Отсутствуют ключи в ответе от практикума')
-        return []
+    if not isinstance(response['homeworks'], list):
+        logger.error('Отсутствие ожидаемых ключей')
+        raise exceptions.HomeworksIsNotAListError
 
     homeworks = response.get('homeworks')
     logger.debug(f'123123123 homeworks: {homeworks}')
@@ -128,7 +126,7 @@ def check_response(response):
 def parse_status(homework):
     """Извлекает информацию о конкретной домашней работе"""
 
-    homework_name = homework['lesson_name']
+    homework_name = homework['homework_name']
     logger.debug(f'homework_name: {homework_name}')
 
     homework_status = homework['status']
@@ -137,11 +135,11 @@ def parse_status(homework):
     if homework_status in HOMEWORK_STATUSES:
         verdict = HOMEWORK_STATUSES[homework_status]
         logger.info(f'Статус работы "{homework_name}" получен')
+
+        return f'Изменился статус проверки работы "{homework_name}". {verdict}'
     else:
         logger.error('Обнаружен недокументированный статус домашней работы')
-        verdict = 'Ошибка: неизвестный статус'
-
-    return f'Изменился статус проверки работы "{homework_name}". {verdict}'
+        raise exceptions.UndefinedHomeworkStatusError
 
 
 def check_tokens():
@@ -160,6 +158,10 @@ def check_tokens():
     logger.info('Токены проверены - OK')
 
     return True
+
+
+init_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def main():
