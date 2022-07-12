@@ -91,8 +91,8 @@ def send_message(bot, message):
 
 def get_api_answer(current_timestamp):
     """Делает запрос к эндпоинту API практикума."""
-    # timestamp = current_timestamp or int(time.time())
-    params = {'from_date': 0}
+    timestamp = current_timestamp or int(time.time())
+    params = {'from_date': timestamp}
     logger.debug(f'params: {params}')
 
     response = requests.get(url=ENDPOINT, headers=HEADERS, params=params)
