@@ -15,7 +15,7 @@ PRACTICUM_TOKEN = os.getenv('TOKEN_YANDEX')
 TELEGRAM_TOKEN = os.getenv('TOKEN_TELEGRAM')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
-RETRY_TIME = 60
+RETRY_TIME = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 
@@ -54,7 +54,6 @@ class telegramHandler(logging.StreamHandler):
     def clear_messages_history(self):
         """Удаление сохраненных логов."""
         self.messages_seen = []
-        print('cleaned')
 
 
 def init_logger(name):
@@ -92,8 +91,8 @@ def send_message(bot, message):
 
 def get_api_answer(current_timestamp):
     """Делает запрос к эндпоинту API практикума."""
-    timestamp = current_timestamp or int(time.time())
-    params = {'from_date': timestamp}
+    # timestamp = current_timestamp or int(time.time())
+    params = {'from_date': 0}
     logger.debug(f'params: {params}')
 
     response = requests.get(url=ENDPOINT, headers=HEADERS, params=params)
