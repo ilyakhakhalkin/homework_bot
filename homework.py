@@ -92,7 +92,7 @@ def send_message(bot, message):
 def get_api_answer(current_timestamp):
     """Делает запрос к эндпоинту API практикума."""
     timestamp = current_timestamp or int(time.time())
-    params = {'from_date': timestamp - 60 * 60 * 24 * 30}
+    params = {'from_date': timestamp}
     logger.debug(f'params: {params}')
 
     response = requests.get(url=ENDPOINT, headers=HEADERS, params=params)
@@ -121,9 +121,10 @@ def check_response(response):
 
     if homeworks == []:
         logger.debug('В ответе нет новых статусов')
-        raise exceptions.NothingNewException
+        # raise exceptions.NothingNewException
+    else:
+        logger.info('Ответ от практикума проверен - ОК')
 
-    logger.info('Ответ от практикума проверен - ОК')
     return homeworks
 
 
