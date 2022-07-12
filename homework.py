@@ -108,9 +108,9 @@ def get_api_answer(current_timestamp):
 
 def check_response(response):
     """Проверяет ответ API практикума."""
-    if response['homeworks'] is None:
-        logger.error('В ответе нет ключа "homeworks"')
-        raise KeyError
+    # if response['homeworks'] is None:
+    #     logger.error('В ответе нет ключа "homeworks"')
+    #     raise KeyError
 
     if not isinstance(response['homeworks'], list):
         logger.error('Отсутствие ожидаемых ключей')
