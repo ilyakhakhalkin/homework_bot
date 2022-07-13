@@ -1,5 +1,6 @@
 import telegram
 import requests
+import json
 from http import HTTPStatus
 import logging
 import time
@@ -14,7 +15,7 @@ PRACTICUM_TOKEN = os.getenv('TOKEN_YANDEX')
 TELEGRAM_TOKEN = os.getenv('TOKEN_TELEGRAM')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
-RETRY_TIME = 600
+RETRY_TIME = 60 * 10
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 
@@ -30,7 +31,7 @@ def init_logger(name):
     """Инициализация логгера и хендлеров."""
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
-    FORMAT = '%(asctime)s - %(levelname)s - %(name)s - %(message)s'
+    FORMAT = '%(asctime)s - %(levelname)s - %(name)s:%(lineno)s - %(message)s'
 
     stream_handler = logging.StreamHandler(stream=sys.stdout)
     stream_handler.setLevel(logging.DEBUG)
@@ -40,34 +41,43 @@ def init_logger(name):
     logger.debug('Логгер инициализирован')
 
 
+init_logger(__name__)
+logger = logging.getLogger(__name__)
+
+
 def send_message(bot, message):
     """Отправляет сообщение в Telegram."""
-    response = bot.send_message(
-        chat_id=TELEGRAM_CHAT_ID,
-        text=message,
-    )
+    try:
+        bot.send_message(
+            chat_id=TELEGRAM_CHAT_ID,
+            text=message,
+        )
 
-    if response['text'] == message:
         logger.info('Сообщение в Telegram успешно отправлено')
-    else:
-        raise RuntimeError('Сбой при отправке сообщения в Telegram')
+
+    except telegram.TelegramError as err:
+        raise telegram.TelegramError(err)
 
 
 def get_api_answer(current_timestamp):
     """Запрос к API практикума."""
-    timestamp = current_timestamp or int(time.time())
+    timestamp = current_timestamp or int(time.time() - RETRY_TIME)
     params = {'from_date': timestamp}
 
-    response = requests.get(url=ENDPOINT, headers=HEADERS, params=params)
-
-    if response.status_code != HTTPStatus.OK:
-        raise RuntimeError(
-            f'Ошибка {response.status_code} при запросе к endpoint'
-        )
     try:
+        response = requests.get(url=ENDPOINT, headers=HEADERS, params=params)
+        if response.status_code != HTTPStatus.OK:
+            raise requests.RequestException(
+                f'Ошибка {response.status_code} при запросе к {ENDPOINT}'
+            )
+
         response_json = response.json()
-    except ValueError:
-        raise ValueError('Не удалось преобразовать данные')
+
+    except ConnectionError:
+        raise ConnectionError(f'Не удалось выполнить запрос к {ENDPOINT}')
+
+    except json.decoder.JSONDecodeError:
+        raise ValueError('Не удалось преобразовать данные JSON')
 
     logger.info('Ответ от практикума получен')
     return response_json
@@ -85,19 +95,27 @@ def check_response(response):
         raise TypeError('Неверный тип данных')
 
     homeworks = response.get('homeworks')
-
     logger.debug(f'homeworks: {homeworks}')
-    logger.info('Ответ от практикума проверен - ОК')
 
-    return homeworks
+    if type(homeworks) is list:
+        logger.info('Ответ от практикума проверен - ОК')
+        return homeworks
+    else:
+        raise TypeError('Неверный тип данных')
 
 
 def parse_status(homework):
     """Извлекает информацию о конкретной домашней работе."""
-    homework_name = homework['homework_name']
+    if type(homework) is not dict:
+        raise TypeError('Неверный тип данных')
+
+    if 'homework_name' not in homework.keys():
+        raise KeyError('Отсутствие ожидаемых ключей')
+
+    homework_name = homework.get('homework_name')
     logger.debug(f'homework_name: {homework_name}')
 
-    homework_status = homework['status']
+    homework_status = homework.get('status')
     logger.debug(f'homework_status: {homework_status}')
 
     if homework_status in HOMEWORK_STATUSES:
@@ -129,11 +147,11 @@ def check_tokens():
 def main():
     """Основная логика работы бота."""
     if not check_tokens():
-        logger.critical('Ошибка авторизации')
-        return
+        sys.exit('Ошибка авторизации')
 
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    current_timestamp = int(time.time())
+    current_timestamp = int(time.time() - RETRY_TIME)
+    log_history = []
 
     while True:
         try:
@@ -144,17 +162,20 @@ def main():
                 message = parse_status(work)
                 send_message(bot, message)
 
-            current_timestamp = response.get('current_date')
+            current_timestamp = response.get(
+                'current_date',
+                int(time.time() - RETRY_TIME)
+            )
+            log_history = []
 
         except Exception as error:
             logger.error(error)
-            send_message(bot, str(error))
+            if error.args not in log_history:
+                log_history.append(error.args)
+                send_message(bot, str(error))
 
         time.sleep(RETRY_TIME)
 
-
-init_logger(__name__)
-logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
     """main."""
