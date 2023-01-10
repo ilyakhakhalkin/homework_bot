@@ -57,13 +57,12 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.PASSPHRASE }}
         script: |
-          # sudo docker-compose up
           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.PROJECT_NAME }}
           sudo docker stop $(sudo docker ps -a -q)
 
-          touch .env
-          echo "${{ secrets.SERVER_ENV_PROD }}" > .env
-          cat .env
+          sudo touch .env
+          sudo echo "${{ secrets.SERVER_ENV_PROD }}" > .env
+          sudo cat .env
 
           sudo docker run --rm -d -p 5000:5000 ${{ secrets.DOCKER_USERNAME }}/${{ secrets.PROJECT_NAME }}
 
