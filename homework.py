@@ -31,11 +31,11 @@ def init_logger(name):
     """Инициализация логгера и хендлеров."""
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
-    FORMAT = '%(asctime)s - %(levelname)s - %(name)s:%(lineno)s - %(message)s'
+    format = '%(asctime)s - %(levelname)s - %(name)s:%(lineno)s - %(message)s'
 
     stream_handler = logging.StreamHandler(stream=sys.stdout)
     stream_handler.setLevel(logging.DEBUG)
-    stream_handler.setFormatter(logging.Formatter(FORMAT))
+    stream_handler.setFormatter(logging.Formatter(format))
     logger.addHandler(stream_handler)
 
     logger.debug('Логгер инициализирован')
@@ -100,8 +100,7 @@ def check_response(response):
     if type(homeworks) is list:
         logger.info('Ответ от практикума проверен - ОК')
         return homeworks
-    else:
-        raise TypeError('Неверный тип данных')
+    raise TypeError('Неверный тип данных')
 
 
 def parse_status(homework):
@@ -123,8 +122,7 @@ def parse_status(homework):
         logger.info(f'Статус работы "{homework_name}" получен')
 
         return f'Изменился статус проверки работы "{homework_name}". {verdict}'
-    else:
-        raise KeyError('Обнаружен недокументированный статус домашней работы')
+    raise KeyError('Обнаружен недокументированный статус домашней работы')
 
 
 def check_tokens():
