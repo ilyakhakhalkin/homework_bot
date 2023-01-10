@@ -28,8 +28,7 @@ HOMEWORK_STATUSES = {
 
 
 def init_logger(name):
-    '''Инициализация логгера и хендлеров.'''
-
+    """Инициализация логгера и хендлеров."""
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
     FORMAT = '%(asctime)s - %(levelname)s - %(name)s:%(lineno)s - %(message)s'
@@ -47,8 +46,7 @@ logger = logging.getLogger(__name__)
 
 
 def send_message(bot, message):
-    '''Отправляет сообщение в Telegram.'''
-
+    """Отправляет сообщение в Telegram."""
     try:
         bot.send_message(
             chat_id=TELEGRAM_CHAT_ID,
@@ -62,8 +60,7 @@ def send_message(bot, message):
 
 
 def get_api_answer(current_timestamp):
-    '''Запрос к API практикума.'''
-
+    """Запрос к API практикума."""
     timestamp = current_timestamp or int(time.time() - RETRY_TIME)
     params = {'from_date': timestamp}
 
@@ -87,8 +84,7 @@ def get_api_answer(current_timestamp):
 
 
 def check_response(response):
-    '''Проверяет ответ API практикума.'''
-
+    """Проверяет ответ API практикума."""
     if type(response) is not dict:
         raise TypeError('Неверный тип ответа')
 
@@ -109,8 +105,7 @@ def check_response(response):
 
 
 def parse_status(homework):
-    '''Извлекает информацию о конкретной домашней работе.'''
-
+    """Извлекает информацию о конкретной домашней работе."""
     if type(homework) is not dict:
         raise TypeError('Неверный тип данных')
 
@@ -133,8 +128,7 @@ def parse_status(homework):
 
 
 def check_tokens():
-    '''Проверка наличия токенов.'''
-
+    """Проверка наличия токенов."""
     if not PRACTICUM_TOKEN:
         logger.critical('Отсутствует токен практикума')
         return False
@@ -151,8 +145,7 @@ def check_tokens():
 
 
 def main():
-    '''Основная логика работы бота.'''
-
+    """Основная логика работы бота."""
     if not check_tokens():
         sys.exit('Ошибка авторизации')
 
