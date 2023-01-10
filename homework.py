@@ -11,12 +11,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-PRACTICUM_TOKEN = os.environ.get('TOKEN_YANDEX')
-TELEGRAM_TOKEN = os.environ.get('TOKEN_TELEGRAM')
-TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
-# PRACTICUM_TOKEN = os.getenv('TOKEN_YANDEX')
-# TELEGRAM_TOKEN = os.getenv('TOKEN_TELEGRAM')
-# TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+# PRACTICUM_TOKEN = os.environ.get('TOKEN_YANDEX')
+# TELEGRAM_TOKEN = os.environ.get('TOKEN_TELEGRAM')
+# TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
+PRACTICUM_TOKEN = os.getenv('TOKEN_YANDEX')
+TELEGRAM_TOKEN = os.getenv('TOKEN_TELEGRAM')
+TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 RETRY_TIME = 60 * 10
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
