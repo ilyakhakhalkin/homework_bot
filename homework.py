@@ -7,9 +7,8 @@ from http import HTTPStatus
 
 import requests
 import telegram
-from telegram.ext import Updater
-from telegram.ext import MessageHandler
 from dotenv import load_dotenv
+from telegram.ext import MessageHandler, Updater
 
 load_dotenv()
 
