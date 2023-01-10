@@ -64,7 +64,7 @@ jobs:
           echo '${{ secrets.SERVER_ENV_PROD }} ' | sudo tee -a .env >/dev/null
 
           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/${{ secrets.PROJECT_NAME }}
-          sudo docker stop $(sudo docker ps -a -q)
+          sudo docker stop homeworkbot
           sudo docker run --name homeworkbot --env-file=.env --rm -d -p 5000:5000 ${{ secrets.DOCKER_USERNAME }}/${{ secrets.PROJECT_NAME }}
 
   send_message:
