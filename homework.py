@@ -7,13 +7,12 @@ from http import HTTPStatus
 
 import requests
 import telegram
+from telegram.ext import Updater
+from telegram.ext import MessageHandler
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# PRACTICUM_TOKEN = os.environ.get('TOKEN_YANDEX')
-# TELEGRAM_TOKEN = os.environ.get('TOKEN_TELEGRAM')
-# TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
 PRACTICUM_TOKEN = os.getenv('TOKEN_YANDEX')
 TELEGRAM_TOKEN = os.getenv('TOKEN_TELEGRAM')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
@@ -151,6 +150,16 @@ def main():
         sys.exit('Ошибка авторизации')
 
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
+
+    updater = Updater(TELEGRAM_TOKEN, use_context=True)
+    updater.dispatcher.add_handler(
+        MessageHandler(
+            None,
+            lambda *args: send_message(bot, args[0].message.text)
+        )
+    )
+    updater.start_polling()
+
     current_timestamp = int(time.time() - RETRY_TIME)
     log_history = []
 
